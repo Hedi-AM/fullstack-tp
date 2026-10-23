@@ -4,7 +4,11 @@ WORKDIR /app
 ARG NEXT_PUBLIC_API_URL=https://dummyjson.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY package*.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm config set fetch-retries 6 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm ci --prefer-offline --no-audit --no-fund --maxsockets=3
 COPY . .
 RUN npm run build
 
