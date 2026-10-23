@@ -45,12 +45,12 @@ Public images on Docker Hub:
 ### Run from Docker Hub
 
 ```bash
-docker run -d -p 8080:80 hediam/ngapp:1.0
-docker run -d -p 8081:3000 hediam/nxapp:1.0
+docker run -d -p 8090:80 hediam/ngapp:1.0
+docker run -d -p 8091:3000 hediam/nxapp:1.0
 ```
 
-- Angular: http://localhost:8080
-- Next.js: http://localhost:8081
+- Angular: http://localhost:8090
+- Next.js: http://localhost:8091
 
 ### Build locally
 
