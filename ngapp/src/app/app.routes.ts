@@ -7,6 +7,7 @@ import { NotFound } from './not-found/not-found';
 export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'contact', component: Contact },
+  { path: 'contact/:id', component: Contact },
   { path: 'about', component: About },
   { path: '**', component: NotFound },
 ];
