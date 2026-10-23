@@ -1,0 +1,29 @@
+<div class="container py-4">
+  <h1 class="mb-4">Product Catalogue</h1>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border" role="status"></div>
+      <p class="mt-2">Loading products...</p>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger">
+      {{ error() }}
+      <button class="btn btn-sm btn-outline-danger ms-2" (click)="load()">Retry</button>
+    </div>
+  } @else {
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+      @for (p of products(); track p.id) {
+        <div class="col">
+          <app-product-card [product]="p" />
+        </div>
+      }
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center gap-3 mt-4">
+      <button class="btn btn-outline-primary" [disabled]="!hasPrevious()" (click)="previous()">Previous</button>
+      <span>Page {{ page() }} of {{ pages() }}</span>
+      <button class="btn btn-outline-primary" [disabled]="!hasNext()" (click)="next()">Next</button>
+    </div>
+  }
+</div>

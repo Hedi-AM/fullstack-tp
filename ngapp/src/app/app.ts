@@ -1,6 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { Location } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { Header } from './header/header';
 
 @Component({
@@ -9,21 +8,4 @@ import { Header } from './header/header';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
-  // inject() gets services from Angular (dependency injection)
-  private router = inject(Router);
-  private location = inject(Location);
-
-  gotoLogin() {
-    this.router.navigate(['/login']);
-  }
-
-  gotoContact() {
-    this.router.navigate(['/contact']);
-  }
-
-  // Exercise 3: go back to the previous page
-  goBack() {
-    this.location.back();
-  }
-}
+export class App {}

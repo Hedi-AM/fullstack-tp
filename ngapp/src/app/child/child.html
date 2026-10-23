@@ -1,0 +1,10 @@
+<p>Content from parent: {{ content() }}</p>
+
+@for (state of states(); track state) {
+  <div>
+    Name: {{ state }}
+    <button (click)="select(state)">{{ state }}</button>
+  </div>
+} @empty {
+  <div>States are empty</div>
+}

@@ -1,0 +1,56 @@
+<div class="container py-4">
+  <a routerLink="/products" class="btn btn-outline-secondary mb-3">Back to catalogue</a>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border" role="status"></div>
+      <p class="mt-2">Loading product...</p>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
+  } @else if (product(); as p) {
+    <div class="row g-4">
+      <div class="col-md-5">
+        <img [src]="p.thumbnail" [alt]="p.title" class="img-fluid rounded border" />
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          @for (img of p.images ?? []; track img) {
+            <img [src]="img" [alt]="p.title" class="thumb border rounded" />
+          }
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <h1>{{ p.title }}</h1>
+        <p class="text-muted">
+          @if (p.brand) { {{ p.brand }} - }
+          {{ p.category }}
+        </p>
+
+        <h3>
+          {{ p.price | currency }}
+          @if (p.discountPercentage) {
+            <span class="badge bg-success fs-6">-{{ p.discountPercentage }}%</span>
+          }
+        </h3>
+
+        <p>{{ p.description }}</p>
+
+        <ul class="list-unstyled">
+          @if (p.rating) { <li><strong>Rating:</strong> {{ p.rating }} / 5</li> }
+          @if (p.stock !== undefined) { <li><strong>Stock:</strong> {{ p.stock }}</li> }
+          @if (p.availabilityStatus) { <li><strong>Availability:</strong> {{ p.availabilityStatus }}</li> }
+          @if (p.sku) { <li><strong>SKU:</strong> {{ p.sku }}</li> }
+          @if (p.shippingInformation) { <li><strong>Shipping:</strong> {{ p.shippingInformation }}</li> }
+          @if (p.warrantyInformation) { <li><strong>Warranty:</strong> {{ p.warrantyInformation }}</li> }
+          @if (p.returnPolicy) { <li><strong>Return policy:</strong> {{ p.returnPolicy }}</li> }
+        </ul>
+
+        <div class="d-flex flex-wrap gap-2">
+          @for (tag of p.tags ?? []; track tag) {
+            <span class="badge bg-secondary">{{ tag }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

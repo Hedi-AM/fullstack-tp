@@ -1,0 +1,9 @@
+<div class="card h-100 shadow-sm">
+  <img [src]="product().thumbnail" [alt]="product().title" class="card-img-top" />
+  <div class="card-body d-flex flex-column">
+    <h5 class="card-title">{{ product().title }}</h5>
+    <p class="card-text text-muted">{{ shortDescription() }}</p>
+    <p class="fw-bold mt-auto">{{ product().price | currency }}</p>
+    <a [routerLink]="['/products', product().id]" class="btn btn-primary">View details</a>
+  </div>
+</div>
