@@ -123,9 +123,9 @@ Example requests: `api/requests.http`.
 
 ## Docker Hub images
 
-- `hediam/api:1.0`
-- `hediam/ngapp:2.0`
-- `hediam/nxapp:2.0`
+- `hediam/api:2.0`
+- `hediam/ngapp:3.0`
+- `hediam/nxapp:3.0`
 
 ## Notes
 
