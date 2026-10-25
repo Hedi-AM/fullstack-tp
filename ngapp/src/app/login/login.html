@@ -1,1 +1,18 @@
-<p>login works!</p>
+<div class="container py-4" style="max-width: 420px">
+  <h1 class="mb-3">{{ mode() === 'login' ? 'Login' : 'Register' }}</h1>
+  <p class="text-danger" *ngIf="error()">{{ error() }}</p>
+
+  <div class="mb-2">
+    <input class="form-control" type="email" placeholder="Email" [(ngModel)]="email" />
+  </div>
+  <div class="mb-2">
+    <input class="form-control" type="password" placeholder="Password (min 8)" [(ngModel)]="password" />
+  </div>
+
+  <button class="btn btn-primary w-100" (click)="submit()" [disabled]="loading()">
+    {{ loading() ? '...' : (mode() === 'login' ? 'Login' : 'Register') }}
+  </button>
+  <button class="btn btn-link w-100 mt-2" (click)="toggle()">
+    {{ mode() === 'login' ? 'Need an account? Register' : 'Have an account? Login' }}
+  </button>
+</div>

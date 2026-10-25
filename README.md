@@ -106,8 +106,20 @@ Both `src/environments/environment.ts` and `environment.development.ts` contain 
 | PATCH  | `/api/products/:id` | Update product (partial)                       |
 | DELETE | `/api/products/:id` | Delete product                                 |
 | GET    | `/api/categories`   | Categories with `_count.products`              |
+| POST   | `/api/auth/register`| Register user — body `{email,password>=8}`     |
+| POST   | `/api/auth/login`   | Login — returns `{user, token}`                |
 
 Example requests: `api/requests.http`.
+
+`POST/PATCH/DELETE /api/products` require `Authorization: Bearer <token>`. `GET` endpoints are public.
+
+## Authentication (JWT)
+
+- `User` model: `id`, `email` (unique), `passwordHash` (bcrypt, 12 rounds).
+- `POST /api/auth/register` and `POST /api/auth/login` return a signed JWT.
+- `JWT_SECRET` and `JWT_EXPIRES_IN` come from env (see `.env.example`).
+- Angular: `authInterceptor` adds `Authorization: Bearer <token>` to every request; login/register on `/login`; admin redirects to login when logged out.
+- Next.js: `lib/auth.ts` stores the token in `localStorage` and `authHeaders()` adds it to admin CRUD calls; `/admin` redirects to `/login` when the token is missing.
 
 ## Docker Hub images
 

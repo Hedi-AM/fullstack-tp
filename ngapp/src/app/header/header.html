@@ -4,9 +4,17 @@
       <a class="nav-link" routerLink="/">Home</a>
       <a class="nav-link" routerLink="/products">Products</a>
       <a class="nav-link" routerLink="/admin">Admin</a>
-      <a class="nav-link" routerLink="/login">Login</a>
       <a class="nav-link" routerLink="/contact">Contact</a>
       <a class="nav-link" routerLink="/about">About</a>
+    </div>
+    <div class="navbar-nav ms-auto">
+      <ng-container *ngIf="auth.isLoggedIn(); else loggedOut">
+        <span class="navbar-text me-2">{{ auth.user()?.email }}</span>
+        <button class="btn btn-outline-light btn-sm" (click)="logout()">Logout</button>
+      </ng-container>
+      <ng-template #loggedOut>
+        <a class="nav-link" routerLink="/login">Login</a>
+      </ng-template>
     </div>
   </div>
 </nav>

@@ -1,7 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ProductService } from '../product';
+import { AuthService } from '../auth';
 import { Category, Product, ProductPayload } from '../models/product';
 
 @Component({
@@ -12,6 +14,8 @@ import { Category, Product, ProductPayload } from '../models/product';
 })
 export class Admin implements OnInit {
   private service = inject(ProductService);
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);
@@ -28,6 +32,10 @@ export class Admin implements OnInit {
   };
 
   ngOnInit(): void {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.loadCategories();
     this.load();
   }
@@ -81,7 +89,14 @@ export class Admin implements OnInit {
         this.loadCategories();
         this.load();
       },
-      error: () => this.error.set('Could not save product.'),
+      error: (err) => {
+        if (err?.status === 401) {
+          this.auth.logout();
+          this.router.navigate(['/login']);
+        } else {
+          this.error.set('Could not save product.');
+        }
+      },
     });
   }
 
@@ -89,7 +104,14 @@ export class Admin implements OnInit {
     if (!confirm('Delete this product?')) return;
     this.service.deleteProduct(id).subscribe({
       next: () => this.load(),
-      error: () => this.error.set('Could not delete product.'),
+      error: (err) => {
+        if (err?.status === 401) {
+          this.auth.logout();
+          this.router.navigate(['/login']);
+        } else {
+          this.error.set('Could not delete product.');
+        }
+      },
     });
   }
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PUBLIC_API_URL } from "@/lib/api";
+import { getToken, clearSession, authHeaders } from "@/lib/auth";
 import type { Category, Product, ProductListResponse, ProductPayload } from "@/types/product";
 
 const EMPTY_FORM: ProductPayload = {
@@ -14,6 +16,7 @@ const EMPTY_FORM: ProductPayload = {
 };
 
 export default function AdminPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<ProductPayload>(EMPTY_FORM);
@@ -37,8 +40,12 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    if (!getToken()) {
+      router.replace("/login");
+      return;
+    }
     void load();
-  }, [load]);
+  }, [load, router]);
 
   function reset(): void {
     setEditId(null);
@@ -57,25 +64,31 @@ export default function AdminPage() {
     });
   }
 
+  function handleAuthFail(status: number): boolean {
+    if (status === 401) {
+      clearSession();
+      router.replace("/login");
+      return true;
+    }
+    return false;
+  }
+
   async function save(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setError("");
-
     const url = editId
       ? `${PUBLIC_API_URL}/products/${editId}`
       : `${PUBLIC_API_URL}/products`;
-
     const res = await fetch(url, {
       method: editId ? "PATCH" : "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(form),
     });
-
+    if (handleAuthFail(res.status)) return;
     if (!res.ok) {
       setError("Could not save product.");
       return;
     }
-
     reset();
     await load();
   }
@@ -83,7 +96,11 @@ export default function AdminPage() {
   async function remove(id: number): Promise<void> {
     if (!window.confirm("Delete this product?")) return;
     setError("");
-    const res = await fetch(`${PUBLIC_API_URL}/products/${id}`, { method: "DELETE" });
+    const res = await fetch(`${PUBLIC_API_URL}/products/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    });
+    if (handleAuthFail(res.status)) return;
     if (!res.ok) {
       setError("Could not delete product.");
       return;
@@ -105,56 +122,17 @@ export default function AdminPage() {
         <h2 className="mb-2 text-lg font-semibold">
           {editId ? "Edit product" : "Create product"}
         </h2>
-
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          <input
-            className="rounded border px-3 py-2"
-            placeholder="Title"
-            value={form.title}
-            onChange={(e) => update("title", e.target.value)}
-          />
-          <input
-            className="rounded border px-3 py-2"
-            placeholder="Category name"
-            value={form.category}
-            onChange={(e) => update("category", e.target.value)}
-          />
-          <input
-            className="rounded border px-3 py-2"
-            type="number"
-            placeholder="Price"
-            value={form.price}
-            onChange={(e) => update("price", Number(e.target.value))}
-          />
-          <input
-            className="rounded border px-3 py-2"
-            type="number"
-            placeholder="Stock"
-            value={form.stock}
-            onChange={(e) => update("stock", Number(e.target.value))}
-          />
-          <input
-            className="rounded border px-3 py-2 md:col-span-2"
-            placeholder="Thumbnail URL"
-            value={form.thumbnail}
-            onChange={(e) => update("thumbnail", e.target.value)}
-          />
-          <textarea
-            className="rounded border px-3 py-2 md:col-span-2"
-            rows={2}
-            placeholder="Description"
-            value={form.description}
-            onChange={(e) => update("description", e.target.value)}
-          />
+          <input className="rounded border px-3 py-2" placeholder="Title" value={form.title} onChange={(e) => update("title", e.target.value)} />
+          <input className="rounded border px-3 py-2" placeholder="Category name" value={form.category} onChange={(e) => update("category", e.target.value)} />
+          <input className="rounded border px-3 py-2" type="number" placeholder="Price" value={form.price} onChange={(e) => update("price", Number(e.target.value))} />
+          <input className="rounded border px-3 py-2" type="number" placeholder="Stock" value={form.stock} onChange={(e) => update("stock", Number(e.target.value))} />
+          <input className="rounded border px-3 py-2 md:col-span-2" placeholder="Thumbnail URL" value={form.thumbnail} onChange={(e) => update("thumbnail", e.target.value)} />
+          <textarea className="rounded border px-3 py-2 md:col-span-2" rows={2} placeholder="Description" value={form.description} onChange={(e) => update("description", e.target.value)} />
         </div>
-
         <div className="mt-2 flex gap-2">
-          <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-            Save
-          </button>
-          <button type="button" onClick={reset} className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700">
-            Cancel
-          </button>
+          <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Save</button>
+          <button type="button" onClick={reset} className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700">Cancel</button>
         </div>
       </form>
 
@@ -178,20 +156,8 @@ export default function AdminPage() {
               <td className="py-1">{Number(product.price).toFixed(2)}</td>
               <td className="py-1">{product.stock}</td>
               <td className="py-1 text-right">
-                <button
-                  type="button"
-                  onClick={() => edit(product)}
-                  className="mr-1 rounded border border-blue-600 px-2 py-1 text-blue-600"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void remove(product.id)}
-                  className="rounded border border-red-600 px-2 py-1 text-red-600"
-                >
-                  Delete
-                </button>
+                <button type="button" onClick={() => edit(product)} className="mr-1 rounded border border-blue-600 px-2 py-1 text-blue-600">Edit</button>
+                <button type="button" onClick={() => void remove(product.id)} className="rounded border border-red-600 px-2 py-1 text-red-600">Delete</button>
               </td>
             </tr>
           ))}

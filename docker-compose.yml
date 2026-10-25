@@ -23,6 +23,8 @@ services:
       DATABASE_URL: postgresql://app:app@db:5432/shop?schema=public
       PORT: 4000
       CORS_ORIGINS: ${CORS_ORIGINS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
     ports:
       - "4000:4000"
     depends_on:
