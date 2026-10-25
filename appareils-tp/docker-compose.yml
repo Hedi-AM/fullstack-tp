@@ -1,0 +1,12 @@
+services:
+  mongo:
+    image: ${MONGO_IMAGE:-mongo:8}
+    container_name: appareils-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+volumes:
+  mongodata:
