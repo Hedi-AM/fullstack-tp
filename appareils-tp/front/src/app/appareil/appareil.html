@@ -1,0 +1,22 @@
+<li class="mb-3">
+  <div class="card">
+    <div class="card-body">
+      <h5
+        class="card-title"
+        [class.text-success]="appareilStatus() === 'On'"
+        [class.text-danger]="appareilStatus() === 'Off'"
+      >
+        {{ appareilName() }} - {{ appareilStatus() }}
+      </h5>
+
+      <input type="text" class="form-control mb-3" [(ngModel)]="appareilName" />
+
+      @if (appareilStatus() === 'Off') {
+        <button class="btn btn-success me-2" (click)="switchOn.emit()">Switch on</button>
+      } @else {
+        <button class="btn btn-warning me-2" (click)="switchOff.emit()">Switch off</button>
+      }
+      <a class="btn btn-outline-primary" [routerLink]="['/appareils', index()]">Detail</a>
+    </div>
+  </div>
+</li>
