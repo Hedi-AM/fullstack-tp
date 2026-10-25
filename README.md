@@ -1,74 +1,121 @@
-# Full Stack Web App - TP1 (Angular and Next.js front-end)
+# Full Stack Web Application — TP1 / TP2
 
-Two front-end apps built from the same lab and the same API (https://dummyjson.com/products):
+Monorepo containing two front-ends (Angular, Next.js) and an Express + Prisma + PostgreSQL API.
 
-| Folder   | Stack                         | Dev port |
-|----------|-------------------------------|----------|
-| `ngapp/` | Angular + Bootstrap           | 4200     |
-| `nxapp/` | Next.js + Tailwind CSS        | 3000     |
+## Layout
 
-Features: product list (responsive grid, pagination 12 per page), product detail page with a "Back to catalogue" link, loading and error states, reusable product card, typed code (TypeScript `strict`).
+- `api/`     — Express 5 + TypeScript + Prisma 7 + PostgreSQL
+- `ngapp/`   — Angular (standalone components, Bootstrap)
+- `nxapp/`   — Next.js 16 (App Router, Tailwind CSS)
+- `docker-compose.yml` — full stack (db, api, ngapp, nxapp)
+
+## Features
+
+- Product catalogue with search (`q`), category filter, and pagination
+- Product detail page with reviews and "Back to catalogue"
+- Admin page to create / edit / delete products (Angular + Next.js)
+- Reviews model (`Review`) — extra model required by the Challenge
+- Categories endpoint returning product counts (Exercise 8)
 
 ## Prerequisites
 
-- Node.js 24 LTS and npm
-- Git
-- Docker (to run the containers)
+- Node 24 LTS
+- Docker + Docker Compose (only inside the Alpine VM in this setup)
+- PostgreSQL 17 (via Docker)
 
-## Run the Angular app (ngapp)
+## Run with Docker (VM)
 
-```bash
-cd ngapp
-npm install
-npm start
-```
+    cp .env.example .env       # edit PUBLIC_API_URL / CORS_ORIGINS if needed
+    docker compose up -d --build
 
-Open http://localhost:4200
+Public URLs (in this setup, VM at 192.168.122.180):
 
-## Run the Next.js app (nxapp)
+| Service  | URL                                 |
+|----------|-------------------------------------|
+| Angular  | http://192.168.122.180:8090         |
+| Next.js  | http://192.168.122.180:8091         |
+| API      | http://192.168.122.180:4000/api     |
+| Postgres | 192.168.122.180:5432 (app/app, db `shop`) |
 
-```bash
-cd nxapp
-npm install
-npm run dev
-```
+The API container runs `npx prisma migrate deploy` on start, then `node dist/server.js`.
 
-Open http://localhost:3000
+## Run without Docker (local dev)
 
-## Run the containers
+**1. Database** — start Postgres 17 and create user `app` / password `app` / database `shop`.
 
-Public images on Docker Hub:
+**2. API**
 
-- `hediam/ngapp:1.0`
-- `hediam/nxapp:1.0`
+    cd api
+    cp .env.example .env       # set DATABASE_URL, PORT=4000, CORS_ORIGINS
+    npm install
+    npx prisma migrate deploy
+    npx prisma generate
+    npx prisma db seed
+    npm run dev
 
-### Run from Docker Hub
+**3. Angular**
 
-```bash
-docker run -d -p 8090:80 hediam/ngapp:1.0
-docker run -d -p 8091:3000 hediam/nxapp:1.0
-```
+    cd ngapp
+    npm install
+    npm start                  # http://localhost:4200
 
-- Angular: http://localhost:8090
-- Next.js: http://localhost:8091
+**4. Next.js**
 
-### Build locally
+    cd nxapp
+    npm install
+    cp .env.example .env.local
+    npm run dev                # http://localhost:3000
 
-```bash
-docker build -t hediam/ngapp:1.0 ./ngapp
-docker build -t hediam/nxapp:1.0 ./nxapp
-```
+## Environment variables
 
-### Push to Docker Hub
+### Root (`.env` for Docker Compose)
 
-```bash
-docker login
-docker push hediam/ngapp:1.0
-docker push hediam/nxapp:1.0
-```
+| Name             | Example                                                   | Purpose                        |
+|------------------|-----------------------------------------------------------|--------------------------------|
+| `PUBLIC_API_URL` | `http://192.168.122.180:4000/api`                         | Baked into both front-ends     |
+| `CORS_ORIGINS`   | `http://192.168.122.180:8090,http://192.168.122.180:8091` | Allowed browser origins on API |
+| `PG_IMAGE`       | `postgres:17` (or `postgres:17-alpine`)                   | Postgres image                 |
 
-The Angular image is a multi-stage build (Node to build, Nginx to serve, with `try_files` so refreshing `/products/5` works). The Next.js image is a multi-stage build using `output: "standalone"` and `node server.js`.
+### `api/.env`
 
-## Screenshots
+| Name           | Example                                                  |
+|----------------|----------------------------------------------------------|
+| `DATABASE_URL` | `postgresql://app:app@localhost:5432/shop?schema=public` |
+| `PORT`         | `4000`                                                   |
+| `CORS_ORIGINS` | `http://localhost:4200,http://localhost:3000`            |
 
-Located in the `screenshots/` folder: list and detail pages for both apps.
+### `nxapp/.env.local`
+
+| Name                  | Purpose                                  |
+|-----------------------|------------------------------------------|
+| `API_URL`             | Server-side base URL (Server Components) |
+| `NEXT_PUBLIC_API_URL` | Browser base URL (Client Components)     |
+
+### `ngapp`
+
+Both `src/environments/environment.ts` and `environment.development.ts` contain `apiUrl`. The Dockerfile replaces `http://localhost:4000/api` with `${PUBLIC_API_URL}` at build time.
+
+## API endpoints
+
+| Method | Path                | Description                                    |
+|--------|---------------------|------------------------------------------------|
+| GET    | `/api/health`       | Health check                                   |
+| GET    | `/api/products`     | List — query: `limit`, `skip`, `q`, `category` |
+| GET    | `/api/products/:id` | One product with `category` and `reviews`      |
+| POST   | `/api/products`     | Create product (JSON body, Zod validated)      |
+| PATCH  | `/api/products/:id` | Update product (partial)                       |
+| DELETE | `/api/products/:id` | Delete product                                 |
+| GET    | `/api/categories`   | Categories with `_count.products`              |
+
+Example requests: `api/requests.http`.
+
+## Docker Hub images
+
+- `hediam/api:1.0`
+- `hediam/ngapp:2.0`
+- `hediam/nxapp:2.0`
+
+## Notes
+
+- JWT authentication (lab section 8) is outlined in TP2 and is the main topic of TP3, so it is implemented in Part III.
+- Prisma client is generated at build time; the API Dockerfile sets a placeholder `DATABASE_URL` only for `prisma generate`.
