@@ -1,20 +1,50 @@
 <h2 class="mb-3">Appliances</h2>
 
-<div class="mb-4">
-  <button class="btn btn-success me-2" [disabled]="!allowed()" (click)="onSwitchOnAll()">
-    Switch on all
-  </button>
-  <button class="btn btn-danger" (click)="onSwitchOffAll()">Switch off all</button>
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Add an appliance</h5>
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Name (e.g. Dishwasher)"
+          name="newName"
+          [(ngModel)]="newName"
+        />
+      </div>
+      <div class="col-6 col-md-3">
+        <select class="form-select" name="newStatus" [(ngModel)]="newStatus">
+          <option value="On">On</option>
+          <option value="Off">Off</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <button class="btn btn-primary w-100" [disabled]="!newName.trim()" (click)="onAdd()">
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<div class="mb-4">
+  <button class="btn btn-success me-2" (click)="onSwitchAll('On')">Switch on all</button>
+  <button class="btn btn-danger" (click)="onSwitchAll('Off')">Switch off all</button>
+</div>
+
+@if (loading()) {
+  <div class="spinner-border text-primary" role="status"></div>
+} @else if (appareils().length === 0 && !error()) {
+  <p class="text-muted">No appliance yet. Add one above.</p>
+}
+
 <ul class="list-unstyled">
-  @for (a of appareilList; track a.name; let i = $index) {
-    <app-appareil
-      [appareilName]="a.name"
-      [appareilStatus]="a.status"
-      [index]="i"
-      (switchOn)="onSwitch(i, 'On')"
-      (switchOff)="onSwitch(i, 'Off')"
-    />
+  @for (a of appareils(); track a._id) {
+    <app-appareil [appareil]="a" (toggle)="onToggle(a)" (remove)="onDelete(a)" />
   }
 </ul>

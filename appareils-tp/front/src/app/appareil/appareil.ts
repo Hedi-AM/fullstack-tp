@@ -1,17 +1,15 @@
-import { Component, input, model, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AppareilData } from '../models/appareil.model';
 
 @Component({
   selector: 'app-appareil',
-  imports: [FormsModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './appareil.html',
 })
 export class Appareil {
-  appareilName = model.required<string>(); // model() = input + output, allows [(...)]
-  appareilStatus = input.required<string>();
-  index = input.required<number>();
+  appareil = input.required<AppareilData>();
 
-  switchOn = output<void>();
-  switchOff = output<void>();
+  toggle = output<void>();
+  remove = output<void>();
 }

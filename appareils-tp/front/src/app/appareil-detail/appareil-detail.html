@@ -1,18 +1,21 @@
-@if (appareil) {
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+
+@if (appareil(); as a) {
   <div class="card">
     <div class="card-body">
-      <h2 class="card-title">{{ appareil.name }}</h2>
+      <h2 class="card-title">{{ a.name }}</h2>
       <p
         class="card-text fs-5"
-        [class.text-success]="appareil.status === 'On'"
-        [class.text-danger]="appareil.status === 'Off'"
+        [class.text-success]="a.status === 'On'"
+        [class.text-danger]="a.status === 'Off'"
       >
-        Status: {{ appareil.status }}
+        Status: {{ a.status }}
       </p>
-      <a class="btn btn-warning" routerLink="/appareils">Back</a>
+      <p class="card-text text-muted small">id: {{ a._id }}</p>
     </div>
   </div>
-} @else {
-  <div class="alert alert-danger">Appliance not found.</div>
-  <a class="btn btn-warning" routerLink="/appareils">Back</a>
 }
+
+<a class="btn btn-warning mt-3" routerLink="/appareils">Back</a>
