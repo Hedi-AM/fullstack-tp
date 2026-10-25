@@ -93,3 +93,21 @@ CORS_ORIGINS=http://localhost:4200,http://YOUR-HOST:8092
 
 
 then rebuild with `docker compose up -d --build`.
+
+## Screenshots
+
+**Appliances (Angular on the VM, data from MongoDB, rooms shown as badges)**
+
+![Appliances](screenshots/ng-appliances.png)
+
+**Rooms**
+
+![Rooms](screenshots/ng-rooms.png)
+
+**API tests with the REST Client (201, 400, 404)**
+
+![REST client](screenshots/REST-client.png)
+
+**Docker Compose: mongo, api and front running in the VM**
+
+![docker compose ps](screenshots/docker-compose-ps.png)

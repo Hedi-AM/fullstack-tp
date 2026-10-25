@@ -131,3 +131,13 @@ Example requests: `api/requests.http`.
 
 - JWT authentication (lab section 8) is outlined in TP2 and is the main topic of TP3, so it is implemented in Part III.
 - Prisma client is generated at build time; the API Dockerfile sets a placeholder `DATABASE_URL` only for `prisma generate`.
+
+## Project parts
+
+| Part | Folder | Description |
+|------|--------|-------------|
+| TP1  | `ngapp/`, `nxapp/` | Angular and Next.js front-ends (dummyjson) |
+| TP2  | `api/` (with `ngapp/` and `nxapp/`) | Express + Prisma + PostgreSQL API with JWT, consumed by both front-ends (`docker-compose.yml` at the root) |
+| TP3  | `appareils-tp/` | Appliances manager: Angular + Express + MongoDB (Mongoose), with its own `docker-compose.yml` and README |
+
+See [`appareils-tp/README.md`](appareils-tp/README.md) for the TP3 run instructions and endpoints.
