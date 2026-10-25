@@ -1,3 +1,4 @@
 export const environment = {
-  apiUrl: 'https://dummyjson.com',
+  production: false,
+  apiUrl: 'http://localhost:4000/api',
 };

@@ -1,89 +1,63 @@
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import type { Product } from "@/types/product";
 import { API_URL } from "@/lib/api";
+import type { Product } from "@/types/product";
 
-export default async function ProductDetail({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+type Params = Promise<{ id: string }>;
+
+export default async function ProductDetailPage({ params }: { params: Params }) {
   const { id } = await params;
-  const response = await fetch(`${API_URL}/products/${id}`);
-  if (response.status === 404) notFound();
-  if (!response.ok) throw new Error("HTTP " + response.status);
-  const p: Product = await response.json();
+  const res = await fetch(`${API_URL}/products/${id}`, { cache: "no-store" });
+
+  if (res.status === 404) notFound();
+  if (!res.ok) return <p className="p-4 text-red-600">Could not load product.</p>;
+
+  const product = (await res.json()) as Product;
 
   return (
-    <main className="mx-auto max-w-5xl p-4">
+    <div className="mx-auto max-w-5xl p-4">
       <Link
         href="/products"
-        className="mb-4 inline-block rounded border border-gray-400 px-4 py-2 hover:bg-gray-200 hover:text-gray-900"
+        className="mb-4 inline-block rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
       >
         Back to catalogue
       </Link>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <div className="relative h-80 rounded border bg-white">
-            <Image
-              src={p.thumbnail}
-              alt={p.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-contain"
-            />
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {(p.images ?? []).map((img, i) => (
-              <Image
-                key={`${img}-${i}`}
-                src={img}
-                alt={p.title}
-                width={80}
-                height={80}
-                className="rounded border bg-white object-contain"
-              />
-            ))}
-          </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="relative h-80 rounded border p-4">
+          <Image
+            src={product.thumbnail}
+            alt={product.title}
+            fill
+            sizes="400px"
+            className="object-contain"
+          />
         </div>
-
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold">{p.title}</h1>
-          <p className="text-gray-500">
-            {p.brand ? `${p.brand} - ` : ""}
-            {p.category}
+        <div>
+          <h1 className="text-2xl font-bold">{product.title}</h1>
+          <p className="text-gray-500">{product.category.name}</p>
+          <p className="mt-2">{product.description}</p>
+          <p className="mt-3 text-xl font-bold">
+            {Number(product.price).toFixed(2)} €
           </p>
-          <p className="text-2xl font-bold">
-            ${p.price.toFixed(2)}
-            {p.discountPercentage ? (
-              <span className="ml-2 rounded bg-green-600 px-2 py-1 text-sm text-white">
-                -{p.discountPercentage}%
-              </span>
-            ) : null}
-          </p>
-          <p>{p.description}</p>
-
-          <ul className="mt-2 space-y-1">
-            {p.rating !== undefined && <li><strong>Rating:</strong> {p.rating} / 5</li>}
-            {p.stock !== undefined && <li><strong>Stock:</strong> {p.stock}</li>}
-            {p.availabilityStatus && <li><strong>Availability:</strong> {p.availabilityStatus}</li>}
-            {p.sku && <li><strong>SKU:</strong> {p.sku}</li>}
-            {p.shippingInformation && <li><strong>Shipping:</strong> {p.shippingInformation}</li>}
-            {p.warrantyInformation && <li><strong>Warranty:</strong> {p.warrantyInformation}</li>}
-            {p.returnPolicy && <li><strong>Return policy:</strong> {p.returnPolicy}</li>}
-          </ul>
-
-          <div className="mt-2 flex flex-wrap gap-2">
-            {(p.tags ?? []).map((tag) => (
-              <span key={tag} className="rounded bg-gray-600 px-2 py-1 text-sm text-white">
-                {tag}
-              </span>
-            ))}
-          </div>
+          <p>Stock: {product.stock}</p>
         </div>
       </div>
-    </main>
+
+      {product.reviews?.length ? (
+        <section className="mt-6">
+          <h2 className="mb-2 text-lg font-semibold">Reviews</h2>
+          <div className="space-y-2">
+            {product.reviews.map((review) => (
+              <div key={review.id} className="rounded border p-3">
+                <strong>{review.reviewerName}</strong> — {review.rating}/5
+                <p className="mb-0">{review.comment}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </div>
   );
 }

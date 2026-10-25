@@ -1,65 +1,90 @@
 import Link from "next/link";
-import ProductCard from "@/components/ProductCard";
-import type { ProductsResponse } from "@/types/product";
 import { API_URL } from "@/lib/api";
+import SearchBar from "@/components/SearchBar";
+import ProductCard from "@/components/ProductCard";
+import type { Category, ProductListResponse } from "@/types/product";
 
 const LIMIT = 12;
 
-export default async function Products({
+type SearchParams = Promise<{ q?: string; category?: string; skip?: string }>;
+
+export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ skip?: string }>;
+  searchParams: SearchParams;
 }) {
-  const { skip: skipParam } = await searchParams;
-  const parsed = Number(skipParam);
-  const skip = Number.isInteger(parsed) && parsed > 0 ? parsed : 0;
+  const sp = await searchParams;
+  const q = sp.q ?? "";
+  const category = sp.category ?? "";
+  const skip = Math.max(0, Number(sp.skip ?? 0) || 0);
 
-  const response = await fetch(`${API_URL}/products?limit=${LIMIT}&skip=${skip}`);
-  if (!response.ok) throw new Error("HTTP " + response.status);
-  const data: ProductsResponse = await response.json();
+  const params = new URLSearchParams({
+    limit: String(LIMIT),
+    skip: String(skip),
+  });
+  if (q) params.set("q", q);
+  if (category) params.set("category", category);
 
-  const hasPrevious = skip > 0;
-  const hasNext = skip + LIMIT < data.total;
-  const page = Math.floor(skip / LIMIT) + 1;
-  const pages = Math.ceil(data.total / LIMIT);
+  const [listRes, categoriesRes] = await Promise.all([
+    fetch(`${API_URL}/products?${params.toString()}`, { cache: "no-store" }),
+    fetch(`${API_URL}/categories`, { cache: "no-store" }),
+  ]);
 
-  const buttonClass =
-    "rounded border border-blue-500 px-4 py-2 font-bold text-blue-500 hover:bg-blue-500 hover:text-white";
-  const disabledClass =
-    "rounded border border-gray-400 px-4 py-2 font-bold text-gray-400 cursor-not-allowed";
+  if (!listRes.ok || !categoriesRes.ok) {
+    return <p className="p-4 text-red-600">Could not load products.</p>;
+  }
+
+  const data = (await listRes.json()) as ProductListResponse;
+  const categories = (await categoriesRes.json()) as Category[];
+
+  function pageHref(nextSkip: number): string {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (category) p.set("category", category);
+    if (nextSkip > 0) p.set("skip", String(nextSkip));
+    return `/products${p.toString() ? `?${p.toString()}` : ""}`;
+  }
+
+  const from = data.products.length ? skip + 1 : 0;
+  const to = skip + data.products.length;
 
   return (
-    <main className="mx-auto max-w-6xl p-4">
-      <h1 className="mb-4 text-3xl font-bold">Product Catalogue</h1>
+    <div className="mx-auto max-w-5xl p-4">
+      <h1 className="mb-3 text-2xl font-bold">Products</h1>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data.products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+      <SearchBar initialQ={q} initialCategory={category} categories={categories} />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+        {data.products.map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-4">
-        {hasPrevious ? (
-          <Link
-            href={`/products?skip=${Math.max(skip - LIMIT, 0)}`}
-            className={buttonClass}
-          >
-            Previous
-          </Link>
-        ) : (
-          <span className={disabledClass}>Previous</span>
-        )}
+      <div className="mt-4 flex items-center justify-between">
+        <Link
+          href={pageHref(Math.max(0, skip - LIMIT))}
+          aria-disabled={skip === 0}
+          className={`rounded px-4 py-2 text-white ${
+            skip === 0 ? "pointer-events-none bg-gray-300" : "bg-gray-600 hover:bg-gray-700"
+          }`}
+        >
+          Previous
+        </Link>
         <span>
-          Page {page} of {pages}
+          {from} - {to} of {data.total}
         </span>
-        {hasNext ? (
-          <Link href={`/products?skip=${skip + LIMIT}`} className={buttonClass}>
-            Next
-          </Link>
-        ) : (
-          <span className={disabledClass}>Next</span>
-        )}
+        <Link
+          href={pageHref(skip + LIMIT)}
+          aria-disabled={skip + LIMIT >= data.total}
+          className={`rounded px-4 py-2 text-white ${
+            skip + LIMIT >= data.total
+              ? "pointer-events-none bg-gray-300"
+              : "bg-gray-600 hover:bg-gray-700"
+          }`}
+        >
+          Next
+        </Link>
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,5 +1,4 @@
-.thumb {
-  width: 70px;
-  height: 70px;
+img {
+  max-height: 420px;
   object-fit: contain;
 }

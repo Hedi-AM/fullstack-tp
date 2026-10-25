@@ -1,9 +1,5 @@
-<button (click)="gotoLogin()">Login Page</button>
-<button (click)="gotoContact()">Contact Page</button>
-<button (click)="goBack()">Back</button>
-
-<app-child [content]="content" [states]="states" (selected)="onSelected($event)" />
-<p>Selected: {{ chosen }}</p>
-
-<input #newState type="text" placeholder="New state" />
-<button (click)="addState(newState.value); newState.value = ''">Add state</button>
+<div class="container py-4">
+  <h1>Fullstack shop</h1>
+  <p class="text-muted">Browse products, search by title, filter by category, and manage the catalogue from the admin page.</p>
+  <a class="btn btn-primary" routerLink="/products">Go to products</a>
+</div>

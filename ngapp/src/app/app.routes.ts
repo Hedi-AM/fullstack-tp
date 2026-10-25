@@ -6,6 +6,7 @@ import { About } from './about/about';
 import { NotFound } from './not-found/not-found';
 import { Products } from './products/products';
 import { ProductDetail } from './product-detail/product-detail';
+import { Admin } from './admin/admin';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'contact/:id', component: Contact },
   { path: 'products', component: Products },
   { path: 'products/:id', component: ProductDetail },
+  { path: 'admin', component: Admin },
   { path: 'about', component: About },
   { path: '**', component: NotFound },
 ];
