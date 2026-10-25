@@ -17,9 +17,21 @@ services:
     environment:
       MONGODB_URI: mongodb://mongo:27017/appareilsDB
       PORT: "3001"
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200,http://192.168.122.180:8092}
     ports:
       - "3002:3001"
+
+  front:
+    build:
+      context: ./front
+      args:
+        PUBLIC_API_URL: ${PUBLIC_API_URL:-http://192.168.122.180:3002/api}
+    container_name: appareils-front
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8092:80"
 
 volumes:
   mongodata:

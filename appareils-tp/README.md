@@ -75,3 +75,21 @@ Status codes: 400 invalid data or malformed id, 404 unknown id, 500 unexpected e
 
 - PostgreSQL + Prisma: strict schema and migrations, foreign keys, joins (`include`).
 - MongoDB + Mongoose: schema defined in the code, no migrations, `_id` as ObjectId, references resolved with `populate()`.
+
+## Full stack in Docker (site + API + MongoDB)
+
+`docker compose up -d --build` starts three containers:
+
+| Service | Container         | Host port | URL                                |
+|---------|-------------------|-----------|------------------------------------|
+| front   | `appareils-front` | 8092      | `http://<host>:8092` (Angular)     |
+| api     | `appareils-api`   | 3002      | `http://<host>:3002/api`           |
+| mongo   | `appareils-mongo` | 27017     | MongoDB                            |
+
+The browser calls the API directly, so the API address is baked into the Angular build with the build argument `PUBLIC_API_URL` (default `http://192.168.122.180:3002/api`). To use another host, set it in a `.env` file next to `docker-compose.yml`:
+
+PUBLIC_API_URL=http://YOUR-HOST:3002/api
+CORS_ORIGINS=http://localhost:4200,http://YOUR-HOST:8092
+
+
+then rebuild with `docker compose up -d --build`.
