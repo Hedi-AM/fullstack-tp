@@ -1,0 +1,49 @@
+<h2 class="mb-3">Rooms</h2>
+
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+
+<form #f="ngForm" (ngSubmit)="onAdd(f)" novalidate class="row g-2 mb-4">
+  <div class="col-12 col-md-8">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Room name (e.g. Kitchen)"
+      name="name"
+      required
+      minlength="2"
+      maxlength="40"
+      #nameCtl="ngModel"
+      [(ngModel)]="name"
+      [class.is-invalid]="nameCtl.invalid && (nameCtl.dirty || nameCtl.touched)"
+    />
+    @if (nameCtl.invalid && (nameCtl.dirty || nameCtl.touched)) {
+      <div class="invalid-feedback d-block">
+        @if (nameCtl.errors?.['required']) {
+          The name is required.
+        } @else if (nameCtl.errors?.['minlength']) {
+          The name needs at least 2 characters.
+        }
+      </div>
+    }
+  </div>
+  <div class="col-12 col-md-4">
+    <button type="submit" class="btn btn-primary w-100" [disabled]="f.invalid">Add room</button>
+  </div>
+</form>
+
+@if (loading()) {
+  <div class="spinner-border text-primary" role="status"></div>
+} @else if (rooms().length === 0 && !error()) {
+  <p class="text-muted">No room yet.</p>
+}
+
+<ul class="list-group">
+  @for (r of rooms(); track r._id) {
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      {{ r.name }}
+      <button class="btn btn-sm btn-outline-danger" (click)="onDelete(r)">Delete</button>
+    </li>
+  }
+</ul>

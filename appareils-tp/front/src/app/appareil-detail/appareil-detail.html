@@ -13,9 +13,13 @@
       >
         Status: {{ a.status }}
       </p>
+      <p class="card-text">Room: {{ a.room ? a.room.name : 'none' }}</p>
       <p class="card-text text-muted small">id: {{ a._id }}</p>
+      <a class="btn btn-outline-secondary" [routerLink]="['/appareils', a._id, 'edit']">Edit</a>
     </div>
   </div>
+} @else if (!error()) {
+  <div class="spinner-border text-primary" role="status"></div>
 }
 
 <a class="btn btn-warning mt-3" routerLink="/appareils">Back</a>

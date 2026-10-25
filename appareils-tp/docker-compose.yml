@@ -8,5 +8,18 @@ services:
     volumes:
       - mongodata:/data/db
 
+  api:
+    build: ./api
+    container_name: appareils-api
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/appareilsDB
+      PORT: "3001"
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200}
+    ports:
+      - "3002:3001"
+
 volumes:
   mongodata:

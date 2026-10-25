@@ -45,3 +45,39 @@ Content-Type: application/json
 
 ### delete (204)
 DELETE {{baseUrl}}/{{id}}
+
+### ---------- Challenge ----------
+
+### create a room
+# @name createRoom
+POST http://localhost:3001/api/rooms
+Content-Type: application/json
+
+{ "name": "Kitchen" }
+
+###
+@roomId = {{createRoom.response.body._id}}
+
+### list rooms
+GET http://localhost:3001/api/rooms
+
+### create an appliance in that room (room is populated in the answer)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{ "name": "Microwave", "status": "On", "room": "{{roomId}}" }
+
+### unknown room (400)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{ "name": "Oven", "status": "On", "room": "64b7f0c2a1b2c3d4e5f60718" }
+
+### filter by status
+GET {{baseUrl}}?status=On
+
+### invalid filter (400)
+GET {{baseUrl}}?status=Broken
+
+### delete the room
+DELETE http://localhost:3001/api/rooms/{{roomId}}

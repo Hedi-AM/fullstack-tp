@@ -7,6 +7,9 @@
         [class.text-danger]="appareil().status === 'Off'"
       >
         {{ appareil().name }} - {{ appareil().status }}
+        @if (appareil().room; as r) {
+          <span class="badge bg-secondary ms-2">{{ r.name }}</span>
+        }
       </h5>
 
       @if (appareil().status === 'Off') {
@@ -15,6 +18,7 @@
         <button class="btn btn-warning me-2" (click)="toggle.emit()">Switch off</button>
       }
       <a class="btn btn-outline-primary me-2" [routerLink]="['/appareils', appareil()._id]">Detail</a>
+      <a class="btn btn-outline-secondary me-2" [routerLink]="['/appareils', appareil()._id, 'edit']">Edit</a>
       <button class="btn btn-outline-danger" (click)="remove.emit()">Delete</button>
     </div>
   </div>

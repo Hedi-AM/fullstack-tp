@@ -1,0 +1,59 @@
+<h2 class="mb-3">Edit appliance</h2>
+
+@if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <div class="spinner-border text-primary" role="status"></div>
+} @else if (loaded()) {
+  <form #f="ngForm" (ngSubmit)="onSave(f)" novalidate>
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input
+        id="name"
+        type="text"
+        class="form-control"
+        name="name"
+        required
+        minlength="2"
+        maxlength="60"
+        #nameCtl="ngModel"
+        [(ngModel)]="name"
+        [class.is-invalid]="nameCtl.invalid && (nameCtl.dirty || nameCtl.touched)"
+      />
+      @if (nameCtl.invalid && (nameCtl.dirty || nameCtl.touched)) {
+        <div class="invalid-feedback d-block">
+          @if (nameCtl.errors?.['required']) {
+            The name is required.
+          } @else if (nameCtl.errors?.['minlength']) {
+            The name needs at least 2 characters.
+          }
+        </div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label for="status" class="form-label">Status</label>
+      <select id="status" class="form-select" name="status" [(ngModel)]="status">
+        <option value="On">On</option>
+        <option value="Off">Off</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="room" class="form-label">Room</label>
+      <select id="room" class="form-select" name="room" [(ngModel)]="room">
+        <option value="">No room</option>
+        @for (r of rooms(); track r._id) {
+          <option [value]="r._id">{{ r.name }}</option>
+        }
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary me-2" [disabled]="f.invalid">Save</button>
+    <a class="btn btn-warning" routerLink="/appareils">Cancel</a>
+  </form>
+} @else {
+  <a class="btn btn-warning" routerLink="/appareils">Back</a>
+}

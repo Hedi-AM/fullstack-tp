@@ -2,26 +2,28 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AppareilData } from '../models/appareil.model';
+import { AppareilData, AppareilInput } from '../models/appareil.model';
 
 @Injectable({ providedIn: 'root' })
 export class AppareilService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  getAppareils(): Observable<AppareilData[]> {
-    return this.http.get<AppareilData[]>(this.apiUrl);
+  getAppareils(status?: 'On' | 'Off'): Observable<AppareilData[]> {
+    return this.http.get<AppareilData[]>(this.apiUrl, {
+      params: status ? { status } : {},
+    });
   }
 
   getAppareil(id: string): Observable<AppareilData> {
     return this.http.get<AppareilData>(`${this.apiUrl}/${id}`);
   }
 
-  addAppareil(appareil: Omit<AppareilData, '_id'>): Observable<AppareilData> {
+  addAppareil(appareil: AppareilInput): Observable<AppareilData> {
     return this.http.post<AppareilData>(this.apiUrl, appareil);
   }
 
-  updateAppareil(id: string, appareil: Omit<AppareilData, '_id'>): Observable<AppareilData> {
+  updateAppareil(id: string, appareil: AppareilInput): Observable<AppareilData> {
     return this.http.put<AppareilData>(`${this.apiUrl}/${id}`, appareil);
   }
 

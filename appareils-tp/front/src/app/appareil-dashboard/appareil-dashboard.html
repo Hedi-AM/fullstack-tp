@@ -7,40 +7,75 @@
 <div class="card mb-4">
   <div class="card-body">
     <h5 class="card-title">Add an appliance</h5>
-    <div class="row g-2">
-      <div class="col-12 col-md-6">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Name (e.g. Dishwasher)"
-          name="newName"
-          [(ngModel)]="newName"
-        />
+    <form #f="ngForm" (ngSubmit)="onAdd(f)" novalidate>
+      <div class="row g-2">
+        <div class="col-12 col-md-4">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Name (e.g. Dishwasher)"
+            name="name"
+            required
+            minlength="2"
+            maxlength="60"
+            #nameCtl="ngModel"
+            [(ngModel)]="name"
+            [class.is-invalid]="nameCtl.invalid && (nameCtl.dirty || nameCtl.touched)"
+          />
+          @if (nameCtl.invalid && (nameCtl.dirty || nameCtl.touched)) {
+            <div class="invalid-feedback d-block">
+              @if (nameCtl.errors?.['required']) {
+                The name is required.
+              } @else if (nameCtl.errors?.['minlength']) {
+                The name needs at least 2 characters.
+              }
+            </div>
+          }
+        </div>
+        <div class="col-6 col-md-2">
+          <select class="form-select" name="status" [(ngModel)]="status">
+            <option value="On">On</option>
+            <option value="Off">Off</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <select class="form-select" name="room" [(ngModel)]="room">
+            <option value="">No room</option>
+            @for (r of rooms(); track r._id) {
+              <option [value]="r._id">{{ r.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <button type="submit" class="btn btn-primary w-100" [disabled]="f.invalid">Add</button>
+        </div>
       </div>
-      <div class="col-6 col-md-3">
-        <select class="form-select" name="newStatus" [(ngModel)]="newStatus">
-          <option value="On">On</option>
-          <option value="Off">Off</option>
-        </select>
-      </div>
-      <div class="col-6 col-md-3">
-        <button class="btn btn-primary w-100" [disabled]="!newName.trim()" (click)="onAdd()">
-          Add
-        </button>
-      </div>
-    </div>
+    </form>
   </div>
 </div>
 
-<div class="mb-4">
-  <button class="btn btn-success me-2" (click)="onSwitchAll('On')">Switch on all</button>
+<div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+  <button class="btn btn-success" (click)="onSwitchAll('On')">Switch on all</button>
   <button class="btn btn-danger" (click)="onSwitchAll('Off')">Switch off all</button>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <label for="filter" class="mb-0">Show</label>
+    <select
+      id="filter"
+      class="form-select w-auto"
+      [ngModel]="filter()"
+      (ngModelChange)="onFilter($event)"
+    >
+      <option value="">All</option>
+      <option value="On">On</option>
+      <option value="Off">Off</option>
+    </select>
+  </div>
 </div>
 
 @if (loading()) {
   <div class="spinner-border text-primary" role="status"></div>
 } @else if (appareils().length === 0 && !error()) {
-  <p class="text-muted">No appliance yet. Add one above.</p>
+  <p class="text-muted">No appliance to show.</p>
 }
 
 <ul class="list-unstyled">
