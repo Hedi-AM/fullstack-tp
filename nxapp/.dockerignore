@@ -1,6 +1,8 @@
 node_modules
 .next
-dist
-.angular
 .git
+.env
 .env.local
+Dockerfile
+.dockerignore
+README.md

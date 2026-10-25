@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17
+    image: ${PG_IMAGE:-postgres:17}
     restart: unless-stopped
     environment:
       POSTGRES_USER: app
@@ -9,12 +9,51 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data   # data survives container removal
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d shop"]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://app:app@db:5432/shop?schema=public
+      PORT: 4000
+      CORS_ORIGINS: ${CORS_ORIGINS}
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && node dist/server.js"
+
+  ngapp:
+    build:
+      context: ./ngapp
+      args:
+        PUBLIC_API_URL: ${PUBLIC_API_URL}
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    depends_on:
+      - api
+
+  nxapp:
+    build:
+      context: ./nxapp
+      args:
+        PUBLIC_API_URL: ${PUBLIC_API_URL}
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:4000/api
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "8091:3000"
+    depends_on:
+      - api
 
 volumes:
   pgdata:
